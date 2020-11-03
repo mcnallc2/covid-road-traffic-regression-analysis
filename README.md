@@ -1,2 +1,2 @@
-# covid-road-traffic-regresssion-analysis
-covid road traffic regresssion analysis
+# covid-road-traffic-regression-analysis
+covid road traffic regression analysis
