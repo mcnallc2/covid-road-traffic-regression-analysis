@@ -4,7 +4,7 @@ import csv
 import urllib.request
 from bs4 import BeautifulSoup
 
-f = open("./mini_site_location_ids.txt", "r")
+f = open("./site_location_ids.txt", "r")
 
 
 def get_location_ids():
@@ -36,7 +36,6 @@ nationwide_traffic = {
 }
 
 for i, loc in enumerate(LOCATIONS):
-    print("--> Reading next location.\n")
     progress = (i/len(LOCATIONS)*100)
     print("-------------------------\n=> Location", loc, " - ", progress, "%")
     for j, month in enumerate(MONTHS):
@@ -44,39 +43,48 @@ for i, loc in enumerate(LOCATIONS):
         # build the url with loc and month
         url = "https://www.nratrafficdata.ie/c2/tfmonthreport.asp?sgid=ZvyVmXU8jBt9PJE$c7UXt6&spid=NRA_" + \
             loc + "&reportdate=2020-" + month + "-01&enddate=2020-"+month+"-01"
-        # scrape
-        page = urllib.request.urlopen(url).read()
-        soup = BeautifulSoup(page, "html.parser")
-
-        row024 = soup.find_all("tr")[2:][28]
-        month_row = row024.find_all("td")
-
-        count = 0
-        daily_traffic = []
-        for day in month_row:     
-            #  ignore 0-24 field, and last 3 total fields
-            if count < (len(month_row) - 3) and count != 0:
-                if day.string.strip() == "-":  #  convert empty entries to 0
-                    daily_traffic.append(0)
-                else:
-                    daily_traffic.append(int(day.string))
-            count = count+1
-
-        #  if empty initialise, if not add
-        if nationwide_traffic[month] == []:
-            nationwide_traffic[month] = daily_traffic
-        else:
-            ## update total traffic for each day in this month
-            for k, day in enumerate(nationwide_traffic[month]):
-                nationwide_traffic[month][k] = day + daily_traffic[k]
-            ##
         ##
+        ## enters a loop, keep requesting until data is retrieved
+        data_recieved = False
+        while data_recieved == False:
+            try:
+                # scrape
+                page = urllib.request.urlopen(url).read()
+                soup = BeautifulSoup(page, "html.parser")
+
+                row024 = soup.find_all("tr")[2:][28]
+                month_row = row024.find_all("td")
+
+                count = 0
+                daily_traffic = []
+                for day in month_row:     
+                    #  ignore 0-24 field, and last 3 total fields
+                    if count < (len(month_row) - 3) and count != 0:
+                        if day.string.strip() == "-":  #  convert empty entries to 0
+                            daily_traffic.append(0)
+                        else:
+                            daily_traffic.append(int(day.string))
+                    count = count+1
+
+                #  if empty initialise, if not add
+                if nationwide_traffic[month] == []:
+                    nationwide_traffic[month] = daily_traffic
+                else:
+                    ## update total traffic for each day in this month
+                    for k, day in enumerate(nationwide_traffic[month]):
+                        nationwide_traffic[month][k] = day + daily_traffic[k]
+                    ##
+                ##
+                data_recieved = True
+            except:
+                print("===> Month: ", month, " - Failed, requesting again!")
     ##
     ## for each location we overwrite the csv file with the updated traffic counts
     ## doing this for each location as the scrapper ...
     ## can crash due to bad internet connnections
     with open('traffic_data.csv', 'w', newline='\n') as csvfile:
         ##
+        print("==> Updating CSV file")
         writer = csv.writer(csvfile)
         writer.writerow(["Day", "Traffic"])
         day_num=0
