@@ -1,12 +1,16 @@
+#!/usr/bin/python
+
+import csv
 import urllib.request
 from bs4 import BeautifulSoup
 
-f = open("./site_location_ids.txt", "r")
+f = open("./mini_site_location_ids.txt", "r")
 
 
 def get_location_ids():
     line = "-"
     location_ids = []
+
     while line != "":
         line = f.readline()
         if line.split("-")[0] == "NRA ":
@@ -31,8 +35,8 @@ nationwide_traffic = {
     "09": [],
 }
 
-
 for i, loc in enumerate(LOCATIONS):
+    print("--> Reading next location.\n")
     progress = (i/len(LOCATIONS)*100)
     print("-------------------------\n=> Location", loc, " - ", progress, "%")
     for j, month in enumerate(MONTHS):
@@ -49,9 +53,9 @@ for i, loc in enumerate(LOCATIONS):
 
         count = 0
         daily_traffic = []
-        for day in month_row:
-            #  ignore 0-24, and total fields
-            if count != len(month_row) - 1 and count != 0:
+        for day in month_row:     
+            #  ignore 0-24 field, and last 3 total fields
+            if count < (len(month_row) - 3) and count != 0:
                 if day.string.strip() == "-":  #  convert empty entries to 0
                     daily_traffic.append(0)
                 else:
@@ -62,11 +66,31 @@ for i, loc in enumerate(LOCATIONS):
         if nationwide_traffic[month] == []:
             nationwide_traffic[month] = daily_traffic
         else:
-            nationwide_traffic[month] = nationwide_traffic[month] + \
-                daily_traffic
-    print("--> Reading next location.\n")
+            ## update total traffic for each day in this month
+            for k, day in enumerate(nationwide_traffic[month]):
+                nationwide_traffic[month][k] = day + daily_traffic[k]
+            ##
+        ##
+    ##
+    ## for each location we overwrite the csv file with the updated traffic counts
+    ## doing this for each location as the scrapper ...
+    ## can crash due to bad internet connnections
+    with open('traffic_data.csv', 'w', newline='\n') as csvfile:
+        ##
+        writer = csv.writer(csvfile)
+        writer.writerow(["Day", "Traffic"])
+        day_num=0
+        ##
+        for i, month in enumerate(MONTHS):
+            for j, daily_traffic in enumerate(nationwide_traffic[month]):
+                ##
+                writer.writerow([day_num, daily_traffic])
+                day_num+=1
+            ##
+        ##
+    ##
 
 
 # this nationwide_traffic dictionary is the total traffic for each day
 #  ...stored based on month
-print("NATIONWIDE: ", nationwide_traffic)
+#print("NATIONWIDE: ", nationwide_traffic)
