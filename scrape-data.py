@@ -1,4 +1,4 @@
-#!/usr/bin/python
+# coding=utf-8
 
 import csv
 import urllib.request
@@ -21,18 +21,12 @@ def get_location_ids():
 
 LOCATIONS = get_location_ids()
 #  jan - aug ... data incomplete in october
-MONTHS = ["01", "02", "03", "04", "05", "06", "07", "08", "09"]
+MONTHS = ["10", "11", "12"]
 
 nationwide_traffic = {
-    "01": [],
-    "02": [],
-    "03": [],
-    "04": [],
-    "05": [],
-    "06": [],
-    "07": [],
-    "08": [],
-    "09": [],
+    "10": [],
+    "11": [],
+    "12": []
 }
 
 for i, loc in enumerate(LOCATIONS):
@@ -42,7 +36,7 @@ for i, loc in enumerate(LOCATIONS):
         print("===> Month: ", month)
         # build the url with loc and month
         url = "https://www.nratrafficdata.ie/c2/tfmonthreport.asp?sgid=ZvyVmXU8jBt9PJE$c7UXt6&spid=NRA_" + \
-            loc + "&reportdate=2020-" + month + "-01&enddate=2020-"+month+"-01"
+            loc + "&reportdate=2020-" + month + "-01&enddate=2020-"+month+"-31"
         ##
         ## enters a loop, keep requesting until data is retrieved
         data_recieved = False
@@ -82,7 +76,7 @@ for i, loc in enumerate(LOCATIONS):
     ## for each location we overwrite the csv file with the updated traffic counts
     ## doing this for each location as the scrapper ...
     ## can crash due to bad internet connnections
-    with open('traffic_data.csv', 'w', newline='\n') as csvfile:
+    with open('traffic_data_updated.csv', 'w', newline='\n') as csvfile:
         ##
         print("==> Updating CSV file")
         writer = csv.writer(csvfile)
