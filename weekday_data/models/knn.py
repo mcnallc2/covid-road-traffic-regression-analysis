@@ -7,7 +7,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score
 
 
-data = pd.read_csv("formatted_data.csv")
+data = pd.read_csv("../../data/formatted_data.csv")
 days = data.iloc[:, 0]
 cases = data.iloc[:, 1]
 traffic = data.iloc[:, 2]
@@ -15,21 +15,21 @@ traffic = data.iloc[:, 2]
 cases_df = cases
 traffic_df = traffic
 
-## shift traffic_day list 3 days as first day is a wednesday
+# shift traffic_day list 3 days as first day is a wednesday
 for i in range(len(days)):
-  days[i] += 3
+    days[i] += 3
 
-## creating a list of the day numbers
-## (1st Jan = day 1)
-## init a list for week-day traffic and covid cases
+# creating a list of the day numbers
+# (1st Jan = day 1)
+# init a list for week-day traffic and covid cases
 day_num = []
 traffic_wd = []
 cases_wd = []
 day = 0
 
-## for each traffic day
+# for each traffic day
 for i in range(len(days)):
-    ## if the day is not a sat (6) or sun (0)
+    # if the day is not a sat (6) or sun (0)
     if not ((days[i] % 7 == 6) or (days[i] % 7 == 0)):
         traffic_wd.append(traffic_df[i])
         cases_wd.append(cases_df[i])
