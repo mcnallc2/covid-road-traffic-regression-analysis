@@ -7,7 +7,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score
 
 
-data = pd.read_csv("formatted_data.csv")
+data = pd.read_csv("../../data/formatted_data_new.csv")
 days = data.iloc[:, 0]
 cases = data.iloc[:, 1]
 traffic = data.iloc[:, 2]
