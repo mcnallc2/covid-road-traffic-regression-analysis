@@ -27,16 +27,16 @@ covid_traffic.plot_data(1, cases, traffic, days)
 
 # CASES PREDICTIOR
 # K-FOLD CROSS VALIDATION
-# covid_traffic.k_folds_cross_validation(
-#     1, cases, traffic, days, pred_type='cases', model_type='lasso', Q=1, K='N/A', C=10)
+covid_traffic.k_folds_cross_validation(
+    1, cases, traffic, days, pred_type='cases', model_type='lasso', Q=1, K='N/A', C=10)
 
-# # POLY FEATURES CROSS VALIDATION
-# covid_traffic.poly_feature_cross_validation(
-#     2, cases, traffic, days, pred_type='cases', model_type='lasso', folds=2, K='N/A', C=10)
+# POLY FEATURES CROSS VALIDATION
+covid_traffic.poly_feature_cross_validation(
+    2, cases, traffic, days, pred_type='cases', model_type='lasso', folds=2, K='N/A', C=10)
 
-# # POLY FEATURES CROSS VALIDATION
-# covid_traffic.c_penalty_cross_validation(
-#     3, cases, traffic, days, pred_type='cases', model_type='lasso', folds=2, Q=5, K='N/A')
+# POLY FEATURES CROSS VALIDATION
+covid_traffic.c_penalty_cross_validation(
+    3, cases, traffic, days, pred_type='cases', model_type='lasso', folds=2, Q=5, K='N/A')
 
 # PLOT PREDICTIONS
 covid_traffic.plot_predictions(
