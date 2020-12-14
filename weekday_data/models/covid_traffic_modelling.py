@@ -99,7 +99,7 @@ class CovidTrafficModelling:
             else:
                 model = LinearRegression().fit(cases[train], traffic[train])
             ##
-            predictions = model.predict(traffic[test])
+            # predictions = model.predict(traffic[test])
             predictions = model.predict(cases[test])
             predictions = [round(num[0]) for num in predictions]
             print("mse: ", mean_squared_error(traffic[test], predictions))
