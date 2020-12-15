@@ -4,7 +4,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
-data = pd.read_csv("../../data/formatted_data_new.csv")
+data = pd.read_csv("../data/formatted_data_new.csv")
 data = data.drop(columns=["Date"])
 
 traffic = data[["Total Traffic"]]
