@@ -1,70 +1,59 @@
+from covid_traffic_modelling import CovidTrafficModelling
 import pandas as pd
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+import numpy as np
 
-data = pd.read_csv("../data/formatted_data_new.csv")
-data = data.drop(columns=["Date"])
 
-traffic = data[["Total Traffic"]]
+
+covid_traffic = CovidTrafficModelling()
+
+raw_data = pd.read_csv("../data/formatted_data_new.csv")
+raw_data = raw_data.drop(columns=["Date"])
+traffic = raw_data[["Total Traffic"]]
 
 # create new df and rename column to "Cases"
-cases = data[["Confirmed Cases-6"]]
-cases = cases.rename(columns={"Confirmed Cases-6" : "Cases"})
+data = raw_data[["Confirmed Cases-6"]]
+data = data.rename(columns={"Confirmed Cases-6" : "Cases"})
 
-# make new columns of previous cases-N by shifting previous cases by 1
-cases.loc[:, "Cases-1"] = cases.loc[:,"Cases"].shift()
-cases.loc[:, "Cases-2"] = cases.loc[:,"Cases-1"].shift()
-cases.loc[:, "Cases-3"] = cases.loc[:,"Cases-2"].shift()
-cases.loc[:, "Cases-4"] = cases.loc[:,"Cases-3"].shift()
-cases.loc[:, "Cases-5"] = cases.loc[:,"Cases-4"].shift()
-cases.loc[:, "Cases-6"] = cases.loc[:,"Cases-5"].shift()
-cases.loc[:, "Cases-7"] = cases.loc[:,"Cases-6"].shift()
+# make new columns of previous data-N by shifting previous data by 1
+data.loc[:, "Cases-1"] = data.loc[:,"Cases"].shift()
+data.loc[:, "Cases-2"] = data.loc[:,"Cases-1"].shift()
+data.loc[:, "Cases-3"] = data.loc[:,"Cases-2"].shift()
+data.loc[:, "Cases-4"] = data.loc[:,"Cases-3"].shift()
+data.loc[:, "Cases-5"] = data.loc[:,"Cases-4"].shift()
+data.loc[:, "Cases-6"] = data.loc[:,"Cases-5"].shift()
+data.loc[:, "Cases-7"] = data.loc[:,"Cases-6"].shift()
 
-cases.loc[:, "Traffic-7"] =  traffic.loc[:,"Total Traffic"].shift(7)
-cases.loc[:, "Traffic-8"] =  traffic.loc[:,"Total Traffic"].shift(8)
-cases.loc[:, "Traffic-9"] =  traffic.loc[:,"Total Traffic"].shift(9)
-cases.loc[:, "Traffic-10"] =  traffic.loc[:,"Total Traffic"].shift(10)
-cases.loc[:, "Traffic-11"] =  traffic.loc[:,"Total Traffic"].shift(11)
-cases.loc[:, "Traffic-12"] =  traffic.loc[:,"Total Traffic"].shift(12)
-cases.loc[:, "Traffic-13"] =  traffic.loc[:,"Total Traffic"].shift(13)
-cases.loc[:, "Traffic-14"] =  traffic.loc[:,"Total Traffic"].shift(14)
+data.loc[:, "Traffic"] =  traffic.loc[:,"Total Traffic"].rolling(7).mean()
+# data.loc[:, "Traffic-7"] =  traffic.loc[:,"Total Traffic"].shift(7).rolling(7).mean()
+
 # drop and NA entries
-cases =  cases.dropna()
+data =  data.dropna()
+print(data.iloc[:, 1:])
 
-print(cases)
-# input X will be previous cases
-X = cases.drop(columns=["Cases"]).to_numpy()
-# output y will be next days covid cases
-y = cases.loc[:,"Cases"].to_numpy()
+#  plot the training data
+covid_traffic.plot_data(1, cases=data.iloc[:, 1], traffic=data.iloc[:, 8], days=data.index )
 
+# input X will be previous data
+X = data.drop(columns=["Cases"]).to_numpy()
+# output y will be next days covid data
+y = data.loc[:,"Cases"].to_numpy()
+days = (data.index).to_numpy()
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
-t_train = range(len(y_train))
-t_test = range(len(y_test))
+X = np.column_stack((days, X))
+## 80/20 (train/test) split of data 
+X_train, X_test, y_train, y_test = train_test_split(X, y,  test_size=0.2, shuffle=False)
 
-# Train linear regression model
-model = LinearRegression().fit(X_train, y_train)
-print(model.coef_)
+## K-FOLD CROSS VALIDATION
+covid_traffic.k_folds_cross_validation(2, X_train, y_train, model_type="ridge", Q=1, K='N/A', C=1)
 
-# Predict on traing data and plot 
-y_pred = model.predict(X_train)
-plt.figure()
-plt.plot(t_train, y_pred, "k-", label="Train predictions")
-plt.plot(t_train, y_train, "b--", label = "Train true")
-plt.legend()
-plt.xlabel("Time (days)")
-plt.ylabel("Covid cases")
-plt.savefig("Train.png")
+## POLY FEATURES CROSS VALIDATION
+covid_traffic.poly_feature_cross_validation(
+    3, X_train, y_train, model_type='ridge', folds=100, K='N/A', C=1)
 
-# Predict on test data and plot 
-y_pred = model.predict(X_test)
-print("MSE = ", mean_squared_error(y_test, y_pred))
-plt.figure()
-plt.plot(t_test, y_test, "k-", label="Test true")
-plt.plot(t_test, y_pred, "b--", label = "Test predictions")
-plt.legend()
-plt.xlabel("Time (days)")
-plt.ylabel("Covid cases")
-plt.savefig("Test.png")
+## C PENALTY CROSS VALIDATION
+covid_traffic.c_penalty_cross_validation(
+    4, X_train, y_train, model_type='ridge', folds=100, Q=1, K='N/A')
+
+## PLOT PREDICTIONS
+covid_traffic.plot_predictions(5, X_train, X_test, y_train, y_test, model_type='ridge', folds=100, Q=1, K='N/A', C=1000)
