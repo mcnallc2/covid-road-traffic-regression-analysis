@@ -55,8 +55,12 @@ class CovidTrafficModelling:
         plt.show()
 
 
-    def k_folds_cross_validation(self, fig, cases, traffic, days, pred_type, model_type, Q, K, C):
+    def k_folds_cross_validation(self, fig, X_train, y_train, model_type, Q, K, C):
         ##
+        days_train = X_train[:,0]
+        traffic_train = X_train[:,1].reshape(-1, 1)
+        cases_train = y_train
+
         k_folds = [2, 10, 25, 50, 100]
 
         ## init mean, var and std lists
@@ -67,7 +71,7 @@ class CovidTrafficModelling:
         ## for each k-fold value
         for folds in k_folds:
             ## run cross validation
-            cross_val_results = self.cross_val_model(cases, traffic, days, pred_type, model_type, folds, Q, K, C)
+            cross_val_results = self.cross_val_model(cases_train, traffic_train, days_train, model_type, folds, Q, K, C)
             ## append append mean, var and std error values to lists
             mean_mse.append(cross_val_results[0])
             var_mse.append(cross_val_results[1])
@@ -77,16 +81,20 @@ class CovidTrafficModelling:
         plt.figure(fig)
         kf_vals = ['2', '10', '25', '50', '100']
         plt.errorbar(kf_vals, mean_mse, yerr=var_mse, capsize=5, ecolor='red', label='Mean prediction error with varience')
-        plt.title(f'{pred_type} predictor - {model_type} - K-folds cross validation')
+        plt.title(f'{model_type} - k-folds cross validation')
         plt.xlabel('K-folds')
         plt.ylabel('MSE')
         plt.legend()
-        plt.savefig(f'../plots/cross_val/K-FOLDS_{pred_type}_{model_type}.png')
+        plt.savefig(f'../plots/cross_val/{model_type}_k-folds.png')
         plt.show()
 
 
-    def poly_feature_cross_validation(self, fig, cases, traffic, days, pred_type, model_type, folds, K, C):
+    def poly_feature_cross_validation(self, fig, X_train, y_train, model_type, folds, K, C):
         ##
+        days_train = X_train[:,0]
+        traffic_train = X_train[:,1].reshape(-1, 1)
+        cases_train = y_train
+
         q_range = [1, 2, 3, 4, 5]
 
         ## init mean, var and std lists
@@ -97,7 +105,7 @@ class CovidTrafficModelling:
         ## loop through Q values
         for Q in q_range:
             ##
-            cross_val_results = self.cross_val_model(cases, traffic, days, pred_type, model_type, folds, Q, K, C)
+            cross_val_results = self.cross_val_model(cases_train, traffic_train, days_train, model_type, folds, Q, K, C)
 
             ## append append mean, var and std error values to lists
             mean_mse.append(cross_val_results[0])
@@ -107,16 +115,20 @@ class CovidTrafficModelling:
         plt.figure(fig)
         q_vals = ['1', '2', '3', '4', '5']
         plt.errorbar(q_vals, mean_mse, yerr=var_mse, capsize=5, ecolor='red', label='Mean prediction error with varience')
-        plt.title(f'{pred_type} predictor - {model_type} - Polynomial Features cross validation')
+        plt.title(f'{model_type} - polynomial features cross validation')
         plt.xlabel('Polynomial Features')
         plt.ylabel('MSE')
         plt.legend()
-        plt.savefig(f'../plots/cross_val/POLY-FEATURES_{pred_type}_{model_type}.png')
+        plt.savefig(f'../plots/cross_val/{model_type}_poly_features.png')
         plt.show()
 
 
-    def c_penalty_cross_validation(self, fig, cases, traffic, days, pred_type, model_type, folds, Q, K):
+    def c_penalty_cross_validation(self, fig, X_train, y_train, model_type, folds, Q, K):
         ##
+        days_train = X_train[:,0]
+        traffic_train = X_train[:,1].reshape(-1, 1)
+        cases_train = y_train
+
         C_range = [0.01, 0.1, 1, 10, 1000]
 
         ## init mean, var and std lists
@@ -127,7 +139,7 @@ class CovidTrafficModelling:
         ## loop through C values
         for C in C_range:
             ## run cross validation
-            cross_val_results = self.cross_val_model(cases, traffic, days, pred_type, model_type, folds, Q, K, C)
+            cross_val_results = self.cross_val_model(cases_train, traffic_train, days_train, model_type, folds, Q, K, C)
 
             ## append append mean, var and std error values to lists
             mean_mse.append(cross_val_results[0])
@@ -137,16 +149,20 @@ class CovidTrafficModelling:
         plt.figure(fig)
         c_vals = ['0.01', '0.1', '1', '10', '1000']
         plt.errorbar(c_vals, mean_mse, yerr=var_mse, capsize=5, ecolor='red', label='Mean prediction error with varience')
-        plt.title(f'{pred_type} predictor - {model_type} - C penalty cross validation')
+        plt.title(f'{model_type} - C penalty cross validation')
         plt.xlabel('C penalty')
         plt.ylabel('MSE')
         plt.legend()
-        plt.savefig(f'../plots/cross_val/C-PEN_{pred_type}_{model_type}.png')
+        plt.savefig(f'../plots/cross_val/{model_type}_c_penalty.png')
         plt.show()
 
 
-    def knn_cross_validation(self, fig, cases, traffic, days, pred_type, model_type, folds, Q, C):
+    def knn_cross_validation(self, fig, X_train, y_train, model_type, folds, Q, C):
         ##
+        days_train = X_train[:,0]
+        traffic_train = X_train[:,1].reshape(-1, 1)
+        cases_train = y_train
+
         knn_range = [2, 5, 10, 20, 35, 50, 75, 100]
 
         ## init mean, var and std lists
@@ -157,131 +173,112 @@ class CovidTrafficModelling:
         ## loop through KNN values
         for KNN in knn_range:
             ## run cross validation
-            cross_val_results = self.cross_val_model(cases, traffic, days, pred_type, model_type, folds, Q, KNN, C)
+            cross_val_results = self.cross_val_model(cases_train, traffic_train, days_train, model_type, folds, Q, KNN, C)
 
             ## append append mean, var and std error values to lists
             mean_mse.append(cross_val_results[0])
             var_mse.append(cross_val_results[1])
             std_mse.append(cross_val_results[2])
-
-        print(mean_mse)
-        print(var_mse) 
+ 
         plt.figure(fig)
         knn_vals = ['2', '5', '10', '20', '35', '50', '75', '100']
         plt.errorbar(knn_vals, mean_mse, yerr=var_mse, capsize=5, ecolor='red', label='Mean prediction error with varience')
-        plt.title(f'{pred_type} predictor - {model_type} - KNN cross validation')
+        plt.title(f'{model_type} - knn cross validation')
         plt.xlabel('KNN')
         plt.ylabel('MSE')
         plt.legend()
-        plt.savefig(f'../plots/cross_val/KNN_{pred_type}_{model_type}.png')
+        plt.savefig(f'../plots/cross_val/{model_type}_knn.png')
         plt.show()
 
 
-    def cross_val_model(self, cases, traffic, days, pred_type, model_type, folds, Q, K, C):
+    def cross_val_model(self, cases, traffic, days, model_type, folds, Q, K, C):
         ##
-        ## assign data based on specified predictor type
-        if pred_type == 'cases':
-            X = traffic
-            y = cases
-        elif pred_type == 'traffic':
-            X = cases
-            y = traffic
-        else:
-            print('ERROR: Incorrect predictor type')
-
         ## init mean-squared-error array
         mse=[]
 
         ## generate specifed degree of polynomial features for training
-        X_poly = PolynomialFeatures(Q).fit_transform(X)
+        traffic_poly = PolynomialFeatures(Q).fit_transform(traffic)
 
         ## make k-fold obj
         kf = KFold(n_splits=folds)
 
         ## loop through each k-fold split
-        for train, test in kf.split(X):
+        for train, test in kf.split(traffic_poly):
             ## select specified model
             if model_type == 'knn':
-                model = KNeighborsRegressor(n_neighbors=K).fit(X_poly[train], y[train])
+                model = KNeighborsRegressor(n_neighbors=K).fit(traffic_poly[train], cases[train])
             elif model_type == 'lasso':
-                model = Lasso(alpha=1/2*C).fit(X_poly[train], y[train])
+                model = Lasso(alpha=1/2*C).fit(traffic_poly[train], cases[train])
             elif model_type == 'ridge':
-                model = Ridge(alpha=1/2*C).fit(X_poly[train], y[train])
+                model = Ridge(alpha=1/2*C).fit(traffic_poly[train], cases[train])
             else:
-                model = LinearRegression().fit(X_poly[train], y[train])
+                model = LinearRegression().fit(traffic_poly[train], cases[train])
 
             ## get pridictions using test part of split
-            ypred = model.predict(X_poly[test])
+            ypred = model.predict(traffic_poly[test])
 
             ## get error for predictions and append to error list
-            mse.append(mean_squared_error(y[test], ypred))
+            mse.append(mean_squared_error(cases[test], ypred))
 
         ## return mean, varience and standard dev error values
-        return [np.mean(mse), np.var(mse), np.std(mse)]
+        return [np.mean(mse), np.var(mse)/100000000, np.std(mse)]
 
 
-    def plot_predictions(self, fig, cases, traffic, days, pred_type, model_type, folds, Q, K, C):
+    def plot_predictions(self, fig, X_train, X_test, y_train, y_test, model_type, folds, Q, K, C):
         ##
-        print(f"\n\n-> Plotting {pred_type} predictions")
-
-        ## plot all data
-        plt.figure(fig)
-        plt.plot(days, cases)
+        print(f"\n\n-> Plotting {model_type} predictions")
 
         ## assign data based on specified predictor type
-        if pred_type == 'cases':
-            X = traffic
-            y = cases
-        elif pred_type == 'traffic':
-            X = cases
-            y = traffic
+        #days_train = X_train[:,0]
+        traffic_train = X_train[:,1].reshape(-1, 1)
+        cases_train = y_train
+
+        days_test = X_test[:,0]
+        traffic_test = X_test[:,1].reshape(-1, 1)
+        cases_test = y_test
+
+        # ## generate specifed degree of polynomial features
+        traffic_train = PolynomialFeatures(Q).fit_transform(traffic_train)
+        traffic_test = PolynomialFeatures(Q).fit_transform(traffic_test)
+
+        ## select specified model
+        if model_type == 'knn':
+            model = KNeighborsRegressor(n_neighbors=K).fit(traffic_train, cases_train)
+        elif model_type == 'lasso':
+            model = Lasso(alpha=1/2*C).fit(traffic_train, cases_train)
+        elif model_type == 'ridge':
+            model = Ridge(alpha=1/2*C).fit(traffic_train, cases_train)
         else:
-            print('ERROR: Incorrect predictor type')
+            model = LinearRegression().fit(traffic_train, cases_train)
+        ##
 
-        ## generate specifed degree of polynomial features for training
-        X_poly = PolynomialFeatures(Q).fit_transform(X)
-
-        ## make k-fold obj
-        kf = KFold(n_splits=folds)
-
-        ## loop through each k-fold split
-        for train, test in kf.split(X):
-            ## select specified model
-            if model_type == 'knn':
-                model = KNeighborsRegressor(n_neighbors=K).fit(X_poly[train], y[train])
-            elif model_type == 'lasso':
-                model = Lasso(alpha=1/2*C).fit(X_poly[train], y[train])
-            elif model_type == 'ridge':
-                model = Ridge(alpha=1/2*C).fit(X_poly[train], y[train])
-            else:
-                model = LinearRegression().fit(X_poly[train], y[train])
-            ##
-            predictions = model.predict(X_poly[test])
-            
-            ## print model evaluation results
-            self.evaluate_model(pred_type, model_type, y[test], predictions)
+        predictions = model.predict(traffic_test)
+        
+        ## print model evaluation results
+        self.evaluate_model(model_type, cases_test, predictions)
 
         ## plot the predictions for the all data
-        predictions = model.predict(X_poly)
-        plt.plot(days, predictions, c="lime")
+        plt.figure(fig)
+        plt.scatter(days_test, cases_test, s=10)
+        plt.scatter(days_test, predictions, s=10)
 
         plt.title("Model using traffic to predict cases")
         plt.xlabel("Days")
         plt.ylabel("Cases")
         plt.legend(["training cases", "predicted cases"])
-        plt.savefig(f'../plots/Predictions_{pred_type}_{model_type}.png')
+        plt.savefig(f'../plots/{model_type}_predictions.png')
         plt.show()
 
 
-    def evaluate_model(self, pred_type, model_type, y, y_pred):
+    def evaluate_model(self, model_type, y, y_pred):
         ##
-        if model_type == 'knn':
-            y_pred = [round(num[0]) for num in y_pred]
-        else:
+        if model_type == 'lasso':
             y_pred = [round(num) for num in y_pred]
+        else:
+            y_pred = [round(num[0]) for num in y_pred]
 
         ## print the model error and accuracy and R2 score
-        print(f"\n~~~~~ {pred_type} Predictor ~~~~~")
+        print(f"\n~~~~~ {model_type} predictor ~~~~~")
         print(f"Mean-Squared-Error: {mean_squared_error(y, y_pred)}")
         print(f"Mean-Absolute-Error: {mean_absolute_error(y, y_pred)}")
         print(f"Accuracy: {accuracy_score(y, y_pred)}")
