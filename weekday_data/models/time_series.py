@@ -1,10 +1,13 @@
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 data = pd.read_csv("../../data/formatted_data_new.csv")
 data = data.drop(columns=["Date"])
+
+traffic = data[["Total Traffic"]]
 
 # create new df and rename column to "Cases"
 cases = data[["Confirmed Cases-6"]]
@@ -19,10 +22,18 @@ cases.loc[:, "Cases-5"] = cases.loc[:,"Cases-4"].shift()
 cases.loc[:, "Cases-6"] = cases.loc[:,"Cases-5"].shift()
 cases.loc[:, "Cases-7"] = cases.loc[:,"Cases-6"].shift()
 
+cases.loc[:, "Traffic-7"] =  traffic.loc[:,"Total Traffic"].shift(7)
+cases.loc[:, "Traffic-8"] =  traffic.loc[:,"Total Traffic"].shift(8)
+cases.loc[:, "Traffic-9"] =  traffic.loc[:,"Total Traffic"].shift(9)
+cases.loc[:, "Traffic-10"] =  traffic.loc[:,"Total Traffic"].shift(10)
+cases.loc[:, "Traffic-11"] =  traffic.loc[:,"Total Traffic"].shift(11)
+cases.loc[:, "Traffic-12"] =  traffic.loc[:,"Total Traffic"].shift(12)
+cases.loc[:, "Traffic-13"] =  traffic.loc[:,"Total Traffic"].shift(13)
+cases.loc[:, "Traffic-14"] =  traffic.loc[:,"Total Traffic"].shift(14)
 # drop and NA entries
 cases =  cases.dropna()
-print(cases)
 
+print(cases)
 # input X will be previous cases
 X = cases.drop(columns=["Cases"]).to_numpy()
 # output y will be next days covid cases
@@ -49,6 +60,7 @@ plt.savefig("Train.png")
 
 # Predict on test data and plot 
 y_pred = model.predict(X_test)
+print("MSE = ", mean_squared_error(y_test, y_pred))
 plt.figure()
 plt.plot(t_test, y_test, "k-", label="Test true")
 plt.plot(t_test, y_pred, "b--", label = "Test predictions")
