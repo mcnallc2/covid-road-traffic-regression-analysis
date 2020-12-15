@@ -1,12 +1,18 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import KFold
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score
+from evaluate_models import EvaluateModels
+from cross_validation import CrossValidation
 
+cross_validate = CrossValidation()
+evaluate = EvaluateModels()
 
+# Set up data
 data = pd.read_csv("../../data/formatted_data_new.csv")
 days = data.iloc[:, 0]
 cases = data.iloc[:, 1]
@@ -18,31 +24,7 @@ cases = pd.DataFrame(cases).to_numpy()
 traffic = pd.DataFrame(traffic).to_numpy()
 cases = cases.reshape(-1, 1)
 
-# avg_cases = cases_df.rolling(window=5).mean()
-# avg_cases = cases
-# avg_traffic = traffic
-
-# plt.figure(2)
-# plt.plot(days, cases, c="r")
-# plt.plot(days, avg_cases, c="b")
-# plt.title("Confirmed Cases vs. Days")
-# plt.ylabel("Total Daily Traffic")
-# plt.xlabel("Days")
-# plt.show()
-
-# avg_traffic = traffic_df.rolling(window=15).mean()
-
-# plt.figure(1)
-# plt.plot(days, traffic, c="b")
-# plt.plot(days, avg_traffic, c="g")
-# plt.title("Total Traffic vs. Days")
-# plt.ylabel("Traffic")
-# plt.xlabel("Days")
-# plt.show()
-# plt.figure(4)
-# plt.plot(days, avg_cases)
-# plt.plot(days, avg_traffic)
-# plt.show()
+# Cases, Traffic Plot
 fig, ax1 = plt.subplots()
 ax1.set_title("Days vs. Traffic & Cases")
 ax1.set_xlabel("days")
@@ -53,34 +35,41 @@ ax2 = ax1.twinx()
 ax2.set_ylabel("cases")
 ax2.plot(days, traffic)
 plt.show()
+##########################
 
-# avg_cases = avg_cases.fillna(0)
-# avg_traffic = avg_traffic.fillna(0)
+# Choose optimal KFold
+print("Performing Cross Validation...")
 
-# avg_traffic = pd.DataFrame(avg_traffic).to_numpy()
-# avg_cases = pd.DataFrame(avg_cases).to_numpy()
+cross_validate.k_folds_cross_validation(
+    1, cases, traffic, days, pred_type='cases', model_type='knn', Q=1, K=18, C='N/A')
 
-# avg_traffic = avg_traffic.reshape(-1, 1)
-# avg_cases = avg_cases.reshape(-1, 1)
+# Choose optimal polynomial features
+cross_validate.poly_feature_cross_validation(
+    2, cases, traffic, days, pred_type='cases', model_type='knn', folds=2, K=18, C='N/A')
+
+# Choose optimal neighbours for KNN = 18
+cross_validate.knn_cross_validation(
+    3, cases, traffic, days, pred_type='cases', model_type='knn', folds=2, Q=1, C='N/A')
 
 # TRAFFIC ==> CASES
-print("-> Use traffic to predict case figures")
-kf = KFold(n_splits=5)
+kf = KFold(n_splits=2)
+pred_array = []
+y = []
 plt.figure(5)
 plt.plot(days, cases)
-
-# Picked knn=16 because sqrt(num data points)
 for train, test in kf.split(traffic):
     model = KNeighborsRegressor(n_neighbors=18).fit(
         traffic[train], cases[train])
     predictions = model.predict(traffic[test])
-    predictions = [round(num[0]) for num in predictions]
-    print("mse: ", mean_squared_error(cases[test], predictions))
-    # print(cases[test], "ASS\n", predictions)
-    print("Accuracy: ", accuracy_score(cases[test], predictions))
-    print("R2: ", r2_score(cases[test], predictions))
+
     plt.plot(days[test], predictions, c="lime")
-plt.title("Model using traffic to predict cases")
+
+    y = y + cases[test].tolist()
+    pred_array = pred_array + predictions.tolist()
+## 
+evaluate.evaluate_model(
+    pred_type='cases', model_type='knn', y=y, y_pred=pred_array)
+plt.title("KNN Model using traffic to predict cases")
 plt.xlabel("Days")
 plt.ylabel("Cases")
 plt.legend(["training cases", "predicted cases"])
@@ -88,23 +77,25 @@ plt.show()
 
 
 # CASES ==> TRAFFIC
-print("-> Use cases to predict traffic figures")
 kf = KFold(n_splits=5)
 pred_array = []
+y = []
 plt.figure(5)
 plt.plot(days, traffic)
 for train, test in kf.split(cases):
     model = KNeighborsRegressor(n_neighbors=16).fit(
         cases[train], traffic[train])
     predictions = model.predict(cases[test])
-    predictions = [round(num[0]) for num in predictions]
-    print("mse: ", mean_squared_error(traffic[test], predictions))
-    print("Accuracy: ", accuracy_score(traffic[test], predictions))
+
     plt.plot(days[test], predictions, c="lime")
-    print("R2: ", r2_score(traffic[test], predictions))
-plt.title("Model using cases to predict traffic")
+
+    y = y + traffic[test].tolist()
+    pred_array = pred_array + predictions.tolist()
+
+evaluate.evaluate_model(
+    pred_type='traffic', model_type='knn', y=y, y_pred=pred_array)
+plt.title("KNN Model using cases to predict traffic")
 plt.xlabel("Days")
 plt.ylabel("Traffic")
-
 plt.legend(["training traffic", "predicted traffic"])
 plt.show()
