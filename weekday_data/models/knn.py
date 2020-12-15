@@ -25,8 +25,19 @@ cases = cases.reshape(-1, 1)
 # DATA PLOT
 covid_traffic.plot_data(1, cases, traffic, days)
 
-# TRAFFIC ==> CASES
-covid_traffic.cases_predictor(2, cases, traffic, days, 'knn', K=18, C='N/A')
+# CASES PREDICTIOR
+# K-FOLD CROSS VALIDATION
+covid_traffic.k_folds_cross_validation(
+    1, cases, traffic, days, pred_type='cases', model_type='knn', Q=1, K=18, C='N/A')
 
-# CASES ==> TRAFFIC
-covid_traffic.traffic_predictor(3, cases, traffic, days, 'knn', K=18, C='N/A')
+# POLY FEATURES CROSS VALIDATION
+covid_traffic.poly_feature_cross_validation(
+    2, cases, traffic, days, pred_type='cases', model_type='knn', folds=2, K=18, C='N/A')
+
+# POLY FEATURES CROSS VALIDATION
+covid_traffic.knn_cross_validation(
+    3, cases, traffic, days, pred_type='cases', model_type='knn', folds=2, Q=1, C='N/A')
+
+# PLOT PREDICTIONS
+covid_traffic.plot_predictions(
+    4, cases, traffic, days, pred_type='cases', model_type='knn', folds=2, Q=1, K=2, C='N/A')
