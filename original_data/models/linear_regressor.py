@@ -2,9 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import KFold
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import r2_score
 from evaluate_models import EvaluateModels
 from cross_validation import CrossValidation
 
@@ -59,7 +56,8 @@ plt.show()
 
 # CASES ==> TRAFFIC
 kf = KFold(n_splits=5)
-pred_array = []
+p = []
+y = []
 plt.figure(5)
 plt.plot(days, traffic)
 for train, test in kf.split(cases):
