@@ -1,4 +1,5 @@
 from covid_traffic_modelling import CovidTrafficModelling
+from sklearn.model_selection import train_test_split
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,6 +8,22 @@ import numpy as np
 
 covid_traffic = CovidTrafficModelling()
 
+
+## First evaluating a baseline classifier
+data = pd.read_csv("../data/formatted_data_new.csv")
+days = data.iloc[:, 0]
+cases = data.iloc[:, 1]
+traffic = data.iloc[:, 2]
+## concat days and trafffic data for train/test split
+X = np.column_stack((days, traffic))
+y = cases
+## 80/20 (train/test) split of data 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+## PLOT BASELINE
+covid_traffic.plot_baseline(6, X_train, X_test, y_train, y_test, model_type='baseline')
+
+
+## Now time series modelling
 raw_data = pd.read_csv("../data/formatted_data_new.csv")
 raw_data = raw_data.drop(columns=["Date"])
 traffic = raw_data[["Total Traffic"]]

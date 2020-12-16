@@ -7,6 +7,7 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import Ridge
 from sklearn.linear_model import LinearRegression
+from sklearn.dummy import DummyRegressor
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import accuracy_score
@@ -264,6 +265,41 @@ class CovidTrafficModelling:
         plt.scatter(days_test, predictions, s=10)
 
         plt.title("Model using traffic to predict cases")
+        plt.xlabel("Days")
+        plt.ylabel("Cases")
+        plt.legend(["training cases", "predicted cases"])
+        plt.savefig(f'plots/{model_type}_predictions.png')
+        plt.show()
+
+
+    def plot_baseline(self, fig, X_train, X_test, y_train, y_test, model_type):
+         ##
+        print(f"\n\n-> Plotting {model_type} predictions")
+
+        ## assign data based on specified predictor type
+        #days_train = X_train[:,0]
+        traffic_train = X_train[:,1].reshape(-1, 1)
+        cases_train = y_train
+
+        days_test = X_test[:,0]
+        traffic_test = X_test[:,1].reshape(-1, 1)
+        cases_test = y_test
+
+        ## select specified model
+        model = DummyRegressor(strategy="mean").fit(traffic_train, cases_train)
+        ##
+
+        predictions = model.predict(traffic_test)
+        
+        ## print model evaluation results
+        self.evaluate_model(model_type, cases_test, predictions)
+
+        ## plot the predictions for the all data
+        plt.figure(fig)
+        plt.scatter(days_test, cases_test, s=10)
+        plt.scatter(days_test, predictions, s=10)
+
+        plt.title("Baseline using traffic to predict cases")
         plt.xlabel("Days")
         plt.ylabel("Cases")
         plt.legend(["training cases", "predicted cases"])
